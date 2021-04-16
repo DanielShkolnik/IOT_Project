@@ -17,16 +17,21 @@ class _SchedualPageState extends State<SchedualPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("My Schedual"),
-      ),
-      body: Column(children: <Widget>[
-        Container(
-          child: Column(
-            children: entries,
-          ),
-        ),
-      ]),
+      appBar: AppBar(title: const Text('My schedual')),
+      body: entries.length > 0
+          ? ListView.builder(
+              itemCount: entries.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  child: ListTile(
+                    title: Text(DateTime.now().toString()),
+                    tileColor: Colors.grey,
+                  ),
+                  margin: EdgeInsets.all(10),
+                );
+              },
+            )
+          : Center(child: const Text('No session scheduald')),
       floatingActionButton: FloatingActionButton(
         onPressed: _addEntry,
         tooltip: 'Schedual',
