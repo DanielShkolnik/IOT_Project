@@ -19,8 +19,11 @@
 
 #include "camera_pins.h"
 
-const char* ssid = "TP-LINK_RoEm2.4";
-const char* password = "Rmalal92M";
+//const char* ssid = "TP-LINK_RoEm2.4";
+//const char* password = "Rmalal92M";
+
+const char* ssid = "Mi Phone";
+const char* password = "Oo123456";
 
 void startCameraServer();
 
