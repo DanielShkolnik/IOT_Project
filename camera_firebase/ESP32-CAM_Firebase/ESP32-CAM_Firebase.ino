@@ -13,12 +13,12 @@ How to set up Firebase
 https://iotdesignpro.com/projects/iot-controlled-led-using-firebase-database-and-esp32
 */
 
-const char* ssid = "xxxxxxxxxx";
-const char* password = "xxxxxxxxxx";
+const char* ssid = "Mi Phone";
+const char* password = "Oo123456";
 
 //https://console.firebase.google.com/project/xxxxxxxxxx/settings/serviceaccounts/databasesecrets
-String FIREBASE_HOST = "xxxxxxxxxx.firebaseio.com";
-String FIREBASE_AUTH = "xxxxxxxxxxxxxxxxxxxx";
+String FIREBASE_HOST = "iotrain-49a8d.firebaseio.com";
+String FIREBASE_AUTH = "JSbCf12UlIVnEO7YvXA9yWoHx1h97U32KgWzfScK";
 
 #include "FirebaseESP32.h"
 FirebaseData firebaseData;

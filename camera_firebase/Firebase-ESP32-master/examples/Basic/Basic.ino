@@ -15,10 +15,10 @@
 #include <WiFi.h>
 #include <FirebaseESP32.h>
 
-#define WIFI_SSID "WIFI_AP"
-#define WIFI_PASSWORD "WIFI_PASSWORD"
+#define WIFI_SSID "Mi Phone"
+#define WIFI_PASSWORD "Oo123456"
 
-#define FIREBASE_HOST "PROJECT_ID.firebaseio.com"
+#define FIREBASE_HOST "iotrain-49a8d-default-rtdb.europe-west1.firebaseio.com"
 
 /** The database secret is obsoleted, please use other authentication methods, 
  * see examples in the Authentications folder. 

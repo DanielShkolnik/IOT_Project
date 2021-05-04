@@ -18,20 +18,33 @@
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
 #include "camera_pins.h"
+#include "fd_forward.h"
+
+
+// Remember change Tools->Partition Scheme->Huge App ***************************************
 
 //const char* ssid = "TP-LINK_RoEm2.4";
-//const char* password = "Rmalal92M";
+const char* ssid = "Xiaomi_2.4G";
+const char* password = "Rmalal92M";
 
-const char* ssid = "Mi Phone";
-const char* password = "Oo123456";
+//const char* ssid = "Mi Phone";
+//const char* password = "Oo123456";
+
+int buttonState = 0;
+int counter_global = 0;
+dl_matrix3du_t *image_matrix_global = NULL;
 
 void startCameraServer();
+esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return);
 
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
 
+  pinMode(13, INPUT);
+  pinMode(4, OUTPUT);
+  
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -102,14 +115,34 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
-  startCameraServer();
+  //startCameraServer();
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
-  delay(10000);
+   buttonState = digitalRead(13);
+  if (buttonState == HIGH) {
+    if (counter_global == 0) {
+        esp_err_t res = capture_detect_save(&image_matrix_global);
+        if (res == ESP_OK) {
+          Serial.println("HI HI");
+        }
+        else {
+          Serial.println("BYE BYE");
+        }
+    }
+    // turn LED on
+    digitalWrite(4, HIGH);
+    counter_global++;
+  } else {
+    // turn LED off
+    digitalWrite(4, LOW);
+    
+  }
+  delay(10);
 }
