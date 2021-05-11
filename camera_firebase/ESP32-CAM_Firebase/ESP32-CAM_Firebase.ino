@@ -13,8 +13,11 @@ How to set up Firebase
 https://iotdesignpro.com/projects/iot-controlled-led-using-firebase-database-and-esp32
 */
 
-const char* ssid = "Mi Phone";
-const char* password = "Oo123456";
+//const char* ssid = "Mi Phone";
+//const char* password = "Oo123456";
+
+const char* ssid = "Xiaomi_2.4G";
+const char* password = "Rmalal92M";
 
 //https://console.firebase.google.com/project/xxxxxxxxxx/settings/serviceaccounts/databasesecrets
 String FIREBASE_HOST = "iotrain-49a8d.firebaseio.com";
@@ -133,7 +136,9 @@ void setup() {
   Firebase.setMaxErrorQueue(firebaseData, 30); 
   Firebase.enableClassicRequest(firebaseData, true);
 
-  String jsonData = "{\"photo\":\"" + Photo2Base64() + "\"}";
+  FirebaseJson jsonData;
+  jsonData.add("photo", Photo2Base64());
+  //String jsonData = "{\"photo\":\"" + Photo2Base64() + "\"}";
   String photoPath = "/esp32-cam";
   if (Firebase.pushJSON(firebaseData, photoPath, jsonData)) {
     Serial.println(firebaseData.dataPath());
