@@ -764,6 +764,8 @@ esp_err_t capture_detect_save(dl_matrix3du_t *image_matrix_return){
 
 esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
 
+  ra_filter_init(&ra_filter, 20);
+    
   mtmn_config.type = FAST;
   mtmn_config.min_face = 80;
   mtmn_config.pyramid = 0.707;
@@ -777,6 +779,8 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
   mtmn_config.o_threshold.score = 0.7;
   mtmn_config.o_threshold.nms = 0.7;
   mtmn_config.o_threshold.candidate_number = 1;
+
+  face_id_init(&id_list, FACE_ID_SAVE_NUMBER, ENROLL_CONFIRM_TIMES);
   
   camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
@@ -791,16 +795,16 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
   int64_t fr_encode = 0;
 
   sensor_t * s = esp_camera_sensor_get();
-  s->set_pixformat(s,PIXFORMAT_RGB888);
+  //s->set_pixformat(s,PIXFORMAT_RGB888);
   s->set_framesize(s, FRAMESIZE_CIF);
-  s->set_quality(s, 30);
+  s->set_quality(s, 60);
   
   static int64_t last_frame = 0;
   if(!last_frame) {
       last_frame = esp_timer_get_time();
   }
 
-  while(true){
+  for(int i=0; i<30; i++){
     delay(300);
     detected = false;
     face_id = 0;
@@ -880,10 +884,33 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
   last_frame = 0;
   return res;
 }
-/*
-esp_err_t import_recognize(dl_matrix3du_t *image_matrix_return){
-  esp_err_t res = ESP_OK;
-  box_array_t *net_boxes = face_detect(image_matrix, &mtmn_config);
-  
+
+esp_err_t enroll_face_to_db(dl_matrix3du_t *aligned_face){
+    int8_t left_sample_face = enroll_face(&id_list, aligned_face);
+    if(left_sample_face < 0) return ESP_FAIL;
+
+    if(left_sample_face == (ENROLL_CONFIRM_TIMES - 1)){
+        Serial.printf("Enrolling Face ID: %d\n", id_list.tail);
+    }
+    Serial.printf("Enrolling Face ID: %d sample %d\n", id_list.tail, ENROLL_CONFIRM_TIMES - left_sample_face);
+    //rgb_printf(image_matrix, FACE_COLOR_CYAN, "ID[%u] Sample[%u]", id_list.tail, ENROLL_CONFIRM_TIMES - left_sample_face);
+    if (left_sample_face == 0){
+        Serial.printf("Enrolled Face ID: %d\n", id_list.tail - 1);
+    }
+    return ESP_OK;
 }
-*/
+
+
+esp_err_t recognize_face_from_db(dl_matrix3du_t *aligned_face){
+    int matched_id = recognize_face(&id_list, aligned_face);
+    if (matched_id >= 0) {
+        Serial.printf("Match Face ID: %u\n", matched_id);
+        //rgb_printf(image_matrix, FACE_COLOR_GREEN, "Hello Subject %u", matched_id);
+    } else {
+        Serial.println("No Match Found");
+        //rgb_print(image_matrix, FACE_COLOR_RED, "Intruder Alert!");
+        matched_id = -1;
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
