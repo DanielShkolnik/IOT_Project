@@ -34,12 +34,14 @@ const char* password = "Rmalal92M";
 int buttonState = 0;
 int counter_global = 0;
 dl_matrix3du_t *image_matrix_global_arr[5] = {NULL};
-dl_matrix3du_t *curr_image_matrix_global = NULL;
+//dl_matrix3du_t *curr_image_matrix_global = NULL;
 
 void startCameraServer();
 esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return);
 esp_err_t enroll_face_to_db(dl_matrix3du_t *aligned_face);
 esp_err_t recognize_face_from_db(dl_matrix3du_t *aligned_face);
+void init_camera();
+void print_camera_setting();
 
 void setup() {
   Serial.begin(115200);
@@ -120,6 +122,7 @@ void setup() {
   Serial.println("WiFi connected");
 
   //startCameraServer();
+  init_camera();
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
@@ -151,19 +154,10 @@ void loop() {
         else {
           Serial.printf("BYE BYE - enroll_face_to_db %d\n",i);
         }
-      }
-        
+      } 
     }
     else if(counter_global >= 2){
-      esp_err_t res = recognize_face_from_db(image_matrix_global_arr[1]);
-      if (res == ESP_OK) {
-        Serial.println("HI HI - check recognize_face_from_db");
-      }
-      else {
-        Serial.println("BYE BYE - check recognize_face_from_db");
-      }
-      
-      res = capture_detect_save(&curr_image_matrix_global);
+      esp_err_t res = capture_detect_save(&image_matrix_global_arr[0]);
       if (res == ESP_OK) {
         Serial.printf("HI HI - capture_detect_save\n");
       }
@@ -171,12 +165,12 @@ void loop() {
         Serial.printf("BYE BYE - capture_detect_save\n");
       }
 
-      while(recognize_face_from_db(curr_image_matrix_global) != ESP_OK){
-        dl_matrix3du_free(curr_image_matrix_global);
-        curr_image_matrix_global = NULL;
-        res = capture_detect_save(&curr_image_matrix_global);
+      while(recognize_face_from_db(image_matrix_global_arr[0]) != ESP_OK){
+        dl_matrix3du_free(image_matrix_global_arr[0]);
+        image_matrix_global_arr[0] = NULL;
+        res = capture_detect_save(&image_matrix_global_arr[0]);
       }
-      res = recognize_face_from_db(curr_image_matrix_global);
+      res = recognize_face_from_db(image_matrix_global_arr[0]);
       if (res == ESP_OK) {
         Serial.println("HI HI - recognize_face_from_db");
       }
