@@ -76,7 +76,7 @@ void init_camera();
 void print_camera_setting();
 void send_photo(dl_matrix3du_t* image_matrix);
 String FBPhoto2Base64(camera_fb_t* fb);
-esp_err_t capture_detect(camera_fb_t** fb_return);
+camera_fb_t* capture_detect();
 
 
 //Define Firebase Data object
@@ -199,11 +199,11 @@ void setup() {
 
 #if defined(ESP8266)
   //Set the size of WiFi rx/tx buffers in the case where we want to work with large data.
-  fbdo.setBSSLBufferSize(16384, 16384);
+  fbdo.setBSSLBufferSize(4096, 4096);
 #endif
 
   //Set the size of HTTP response buffers in the case where we want to work with large data.
-  fbdo.setResponseSize(16384);
+  fbdo.setResponseSize(4096);
 
   //Set database read timeout to 1 minute (max 15 minutes)
   Firebase.setReadTimeout(fbdo, 1000 * 60 * 3);
@@ -243,14 +243,13 @@ void loop() {
     */
     if(counter_global >= 0){
       if (Firebase.ready()){
-        camera_fb_t** fb;
-        esp_err_t res = capture_detect(fb);
-        if (res == ESP_OK) {
+        camera_fb_t* fb = capture_detect();
+        if (fb != NULL) {
           Serial.printf("HI HI - capture_detect\n");
           taskCompleted = true;
           Serial.printf("Test camera ready number %d\n",counter_global);
           FirebaseJson jsonData;
-          jsonData.add("photo", FBPhoto2Base64(*fb));
+          jsonData.add("photo", FBPhoto2Base64(fb));
           //jsonData.add("photo", OGPhoto2Base64());
           String photoPath = "/esp32-cam";
           
@@ -270,8 +269,8 @@ void loop() {
         else{
           Serial.println("Firebase.ready() - Not ready!");
         }
-        esp_camera_fb_return(*fb);
-        *fb = NULL;
+        esp_camera_fb_return(fb);
+        fb = NULL;
         }
         else {
           Serial.printf("BYE BYE - capture_detect\n");

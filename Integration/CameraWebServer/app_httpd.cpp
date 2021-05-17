@@ -798,7 +798,7 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
 
   sensor_t * s = esp_camera_sensor_get();
   //s->set_pixformat(s,PIXFORMAT_RGB888);
-  s->set_framesize(s, FRAMESIZE_CIF);
+  s->set_framesize(s, FRAMESIZE_QCIF);
   s->set_quality(s, 60);
   
   static int64_t last_frame = 0;
@@ -954,7 +954,7 @@ void print_camera_setting(){
 
 
 
-esp_err_t capture_detect(camera_fb_t** fb_return){
+camera_fb_t* capture_detect(){
   camera_fb_t* fb;
   esp_err_t res = ESP_OK;
   dl_matrix3du_t *image_matrix = NULL;
@@ -969,7 +969,7 @@ esp_err_t capture_detect(camera_fb_t** fb_return){
 
   sensor_t * s = esp_camera_sensor_get();
   //s->set_pixformat(s,PIXFORMAT_RGB888);
-  s->set_framesize(s, FRAMESIZE_CIF);
+  s->set_framesize(s, FRAMESIZE_QVGA);
   s->set_quality(s, 60);
   
   static int64_t last_frame = 0;
@@ -989,7 +989,7 @@ esp_err_t capture_detect(camera_fb_t** fb_return){
         delay(300);
         Serial.printf("while(fb->len > 4000) fb->len=%d\n", fb->len);
     }
-    
+    Serial.printf("while(fb->len < 4000) fb->len=%d\n", fb->len);
     if (!fb) {
         Serial.println("Camera capture failed");
         res = ESP_FAIL;
@@ -1026,8 +1026,8 @@ esp_err_t capture_detect(camera_fb_t** fb_return){
                 if (align_face(net_boxes, image_matrix, aligned_face) == ESP_OK){
                   detected = true;
                   Serial.println("Face Detected");
-                  *fb_return = fb;
-                  return ESP_OK;
+                  Serial.printf("check if *fb_return = fb - valid\n");
+                  return fb;
                 }
                 /*
                 if(recognition_enabled){
@@ -1064,5 +1064,5 @@ esp_err_t capture_detect(camera_fb_t** fb_return){
   }
 
   last_frame = 0;
-  return res;
+  return NULL;
 }
