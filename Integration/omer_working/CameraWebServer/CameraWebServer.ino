@@ -342,7 +342,7 @@ void send_photo(dl_matrix3du_t* image_matrix){
       base64_encode(output, input, 4);
       imageFile += urlencode(String(output));
     }
-    Serial.printf("length imageFile:%d\n",imageFile.length);
+    Serial.printf("length imageFile:%d\n",imageFile.length());
     FirebaseJson jsonData;
     jsonData.add("photo", imageFile);
     String photoPath = "/esp32-cam";
