@@ -240,8 +240,10 @@ void loop() {
         String path = "/Users/";
         FirebaseJson jsonData;
         FirebaseJsonData resp;
-        String title_photo = "User-" + counter_global + "/Photo";
-        String title_name = "User-" + counter_global + "/Name";
+        String title = "User-";
+        title += counter_global;
+        String title_photo = title + "/Photo";
+        String title_name = title + "/Name";
         jsonData.set(title_photo, Photo2Base64(image_matrix_global_arr[0]));
         jsonData.set(title_name, "Omer");
         
