@@ -197,11 +197,11 @@ void setup() {
 
 #if defined(ESP8266)
   //Set the size of WiFi rx/tx buffers in the case where we want to work with large data.
-  fbdo.setBSSLBufferSize(16384, 16384);
+  fbdo.setBSSLBufferSize(1024, 1024);
 #endif
 
   //Set the size of HTTP response buffers in the case where we want to work with large data.
-  fbdo.setResponseSize(16384);
+  fbdo.setResponseSize(1024);
 
   //Set database read timeout to 1 minute (max 15 minutes)
   Firebase.setReadTimeout(fbdo, 1000 * 60 * 3);
