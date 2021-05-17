@@ -1,4 +1,3 @@
-
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
 //            Ensure ESP32 Wrover Module or other board with PSRAM is selected
@@ -75,6 +74,8 @@ esp_err_t recognize_face_from_db(dl_matrix3du_t *aligned_face);
 void init_camera();
 void print_camera_setting();
 void send_photo(dl_matrix3du_t* image_matrix);
+String FBPhoto2Base64(camera_fb_t* fb);
+camera_fb_t* capture_detect();
 
 
 //Define Firebase Data object
@@ -223,31 +224,44 @@ void setup() {
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  buttonState = digitalRead(13);
-  if (buttonState == HIGH) {
-    
-    if (counter_global == 0) {
+    // put your main code here, to run repeatedly:
+    buttonState = digitalRead(13);
+    if (buttonState == HIGH) {
+        if (counter_global == 0) {
         for(int i=0; i<5; i++){
-          esp_err_t res = capture_detect_save(&image_matrix_global_arr[i]);
-          if (res == ESP_OK) {
-            Serial.printf("HI HI - capture_detect_save %d\n",i);
-          }
-          else {
-            Serial.printf("BYE BYE - capture_detect_save %d\n",i);
-          }
+            esp_err_t res = capture_detect_save(&image_matrix_global_arr[i]);
+            if (res == ESP_OK) {
+                Serial.printf("HI HI - capture_detect_save %d\n",i);
+            }
+            else {
+                Serial.printf("BYE BYE - capture_detect_save %d\n",i);
+            }
         }
-    }
-   
-    if(counter_global >= 1){
-      if (Firebase.ready()){
-          send_photo(image_matrix_global_arr[0]);
-      }
-      else{
-        Serial.println("Firebase.ready() - Not ready!");
-      }
-    }
+        String path = "/Users/";
+        FirebaseJson jsonData;
+        FirebaseJsonData resp;
+        String title_photo = "User-" + counter_global + "/Photo";
+        String title_name = "User-" + counter_global + "/Name";
+        jsonData.set(title_photo, Photo2Base64(image_matrix_global_arr[0]));
+        jsonData.set(title_name, "Omer");
+        
+        if (Firebase.set(fbdo, path.c_str(), jsonData)) Serial.println("PASSED - Firebase.set");
+        else Serial.println("FAILED - Firebase.set");
+        if (Firebase.get(fbdo, path.c_str())) Serial.println("PASSED - Firebase.get");
+        else Serial.println("FAILED - Firebase.get");
 
+        jsonData = fbdo.jsonObject();
+
+        jsonData.get(resp, title_photo);
+        const char* resp_photo = resp.stringValue.c_str();
+        String parse_resp_photo = resp_photo + strlen("data:image/jpeg;base64,");
+        Serial.println(title_photo + " = " + parse_resp_photo);
+        
+        jsonData.get(resp, title_name);
+        String resp_name = resp.stringValue;
+        Serial.println(title_name + " = " + resp_name);
+    }
+    /*
     else if(counter_global == 2){
       for(int i=0; i<5; i++){
         esp_err_t res = enroll_face_to_db(image_matrix_global_arr[i]);
@@ -260,14 +274,6 @@ void loop() {
       } 
     }
     else if(counter_global >= 3){
-      esp_err_t res = capture_detect_save(&image_matrix_global_arr[0]);
-      if (res == ESP_OK) {
-        Serial.printf("HI HI - capture_detect_save\n");
-      }
-      else {
-        Serial.printf("BYE BYE - capture_detect_save\n");
-      }
-
       while(recognize_face_from_db(image_matrix_global_arr[0]) != ESP_OK){
         dl_matrix3du_free(image_matrix_global_arr[0]);
         image_matrix_global_arr[0] = NULL;
@@ -281,15 +287,76 @@ void loop() {
         Serial.println("BYE BYE - recognize_face_from_db");
       }
     }
+    */
     // turn LED on
     digitalWrite(4, HIGH);
     counter_global++;
-  } else {
+  }
+  else {
     // turn LED off
     digitalWrite(4, LOW);
     
   }
   delay(100);
+}
+
+
+
+
+
+String Photo2Base64(dl_matrix3du_t* image_matrix) {
+    String imageFile = "data:image/jpeg;base64,"; 
+    char *input = (char *)image_matrix->item;
+    int len = image_matrix->h * image_matrix->w * image_matrix->c;
+    Serial.printf("Photo2Base64 - LEN = %d\n", len);
+    char output[base64_enc_len(3)];
+    for (int i=0;i<len;i+=3, input+=3) {
+      base64_encode(output, input, 3);
+      imageFile += urlencode(String(output));
+    }
+    return imageFile;
+}
+
+String FBPhoto2Base64(camera_fb_t* fb) {
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return "";
+    }
+  
+    String imageFile = "data:image/jpeg;base64,";
+    char *input = (char *)fb->buf;
+    Serial.printf("OGPhoto2Base64 - LEN = %d\n", fb->len);
+    char output[base64_enc_len(3)];
+    for (int i=0;i<fb->len;i++) {
+      base64_encode(output, (input++), 3);
+      if (i%3==0) imageFile += urlencode(String(output));
+    }
+    esp_camera_fb_return(fb);
+    
+    return imageFile;
+}
+
+
+
+String OGPhoto2Base64() {
+    camera_fb_t * fb = NULL;
+    fb = esp_camera_fb_get();  
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return "";
+    }
+  
+    String imageFile = "data:image/jpeg;base64,";
+    char *input = (char *)fb->buf;
+    Serial.printf("OGPhoto2Base64 - LEN = %d\n", fb->len);
+    char output[base64_enc_len(3)];
+    for (int i=0;i<fb->len;i++) {
+      base64_encode(output, (input++), 3);
+      if (i%3==0) imageFile += urlencode(String(output));
+    }
+    esp_camera_fb_return(fb);
+    
+    return imageFile;
 }
 
 
@@ -336,16 +403,18 @@ void send_photo(dl_matrix3du_t* image_matrix){
   char *input = (char *)image_matrix->item;
   int len = image_matrix->h * image_matrix->w * image_matrix->c;
   Serial.printf("Photo2Base64 - LEN = %d\n", len);
-  char output[base64_enc_len(4)];
+  char output[base64_enc_len(3)];
   for (int k=0; k<4; k++){
     for (int i=0;i<len/4;i+=4, input+=4) {
       base64_encode(output, input, 4);
       imageFile += urlencode(String(output));
     }
-    Serial.printf("length imageFile:%d\n",imageFile.length());
     FirebaseJson jsonData;
     jsonData.add("photo", imageFile);
+
     String photoPath = "/esp32-cam";
+    
+    Serial.printf("Test jsonData.add number %d\n",counter_global);
 
     if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
       Serial.println(fbdo.dataPath());
