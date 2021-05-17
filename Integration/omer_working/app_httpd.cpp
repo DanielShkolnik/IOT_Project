@@ -798,7 +798,7 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
 
   sensor_t * s = esp_camera_sensor_get();
   //s->set_pixformat(s,PIXFORMAT_RGB888);
-  s->set_framesize(s, FRAMESIZE_CIF);
+  s->set_framesize(s, FRAMESIZE_QVGA);
   s->set_quality(s, 60);
   
   static int64_t last_frame = 0;
