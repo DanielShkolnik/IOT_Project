@@ -78,6 +78,8 @@ void send_photo(dl_matrix3du_t* image_matrix);
 String FBPhoto2Base64(camera_fb_t* fb);
 camera_fb_t* capture_detect();
 dl_matrix3du_t* detect_matrix(camera_fb_t* fb);
+void upload_user(String path);
+void enroll_user_from_db(String path);
 
 
 //Define Firebase Data object
@@ -230,21 +232,11 @@ void loop() {
    buttonState = digitalRead(13);
    esp_err_t res;
   if (buttonState == HIGH) {
-    String path = "/Users/User-" + counter_global;
+    String path = "/Users/User-";
+    path += counter_global;
     if(counter_global == 0){
       if (Firebase.ready()){
-        camera_fb_t* fb = capture_detect();
-        if (fb != NULL) {
-          Serial.printf("HI HI - capture_detect\n");
-          taskCompleted = true;
-          Serial.printf("Test camera ready number %d\n",counter_global);
-          upload_user(path);
-        }
-        else{
-          Serial.println("Firebase.ready() - Not ready!");
-        }
-        esp_camera_fb_return(fb);
-        fb = NULL;
+       upload_user(path);
       }
       else {
         Serial.printf("BYE BYE - capture_detect\n");
@@ -349,9 +341,9 @@ String FBPhoto2Base64(camera_fb_t* fb) {
 }
 
 
-void Base64ToPhotoFB(char* input, camera_fb_t* fb) {
+void Base64ToPhotoFB(const char* input, camera_fb_t* fb) {
   input += strlen("data:image/jpeg;base64,");
-  base64_decode(fb->buff, input, strlen(input));
+  base64_decode((char*)fb->buf, (char*)input, strlen(input));
 }
 
 
@@ -450,18 +442,26 @@ void send_photo(dl_matrix3du_t* image_matrix){
 
 
 void upload_user(String path){
-  FirebaseJson jsonData;
-  
-  String title_name = path + "/Name";
-  jsonData.set(title_name, name);
+  //String title_name = title + "/Name";
+  //jsonData.set(title_name, "Daniel");
+  camera_fb_t* fb;
   for(int i=0; i<5; i++){
-    String title_photo = path + "/Photo-" + i;
+    fb = capture_detect();
+    if(!fb){
+      Serial.println("Camera capture failed");
+      return;
+    }
+    String title_photo = "/Photo-";
+    title_photo += i;
+    FirebaseJson jsonData;
     jsonData.set(title_photo, FBPhoto2Base64(fb));
-    delay(100);
+    Serial.println("finished jsonData.set");
+    if (Firebase.set(fbdo, path.c_str(), jsonData)) Serial.println("PASSED - Firebase.set");
+    else Serial.println("FAILED - Firebase.set");
+    esp_camera_fb_return(fb);
+    fb = NULL;
+    delay(1000);
   }
-  
-  if (Firebase.set(fbdo, path.c_str(), jsonData)) Serial.println("PASSED - Firebase.set");
-  else Serial.println("FAILED - Firebase.set");
 }
 
 
@@ -479,13 +479,13 @@ void enroll_user_from_db(String path){
 
   for(int i=0; i<5; i++){
     String title_photo = path + "/Photo-" + i;
-    jsonData.get(resp, title_photo)
+    jsonData.get(resp, title_photo);
     const char* resp_photo = resp.stringValue.c_str();
     Serial.println(title_photo + " = " + resp_photo);
     camera_fb_t* fb = esp_camera_fb_get();
     Base64ToPhotoFB(resp_photo, fb);
     dl_matrix3du_t* aligned_face = detect_matrix(fb);
-    esp_err_t res = enroll_face_to_db(dl_matrix3du_t *aligned_face);
+    esp_err_t res = enroll_face_to_db(aligned_face);
     if (res == ESP_OK) {
       Serial.printf("HI HI - enroll_face_to_db %d\n",i);
     }
