@@ -248,23 +248,47 @@ void loop() {
           Serial.printf("HI HI - capture_detect\n");
           taskCompleted = true;
           Serial.printf("Test camera ready number %d\n",counter_global);
+          String path = "/Users";
           FirebaseJson jsonData;
-          jsonData.add("photo", FBPhoto2Base64(fb));
-          //jsonData.add("photo", OGPhoto2Base64());
-          String photoPath = "/esp32-cam";
-          
-          Serial.printf("Test jsonData.add number %d\n",counter_global);
-
-          if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
-            Serial.println(fbdo.dataPath());
-            Serial.println(fbdo.pushName());
-            Serial.println(fbdo.dataPath() + "/"+ fbdo.pushName());
-          } 
+          FirebaseJsonData resp;
+          String title = "User-";
+          title += counter_global;
+          String title_photo = title + "/Photo";
+          String title_name = title + "/Name";
+          jsonData.set(title_photo, FBPhoto2Base64(fb));
+          jsonData.set(title_name, "Daniel");
+         
+          if (Firebase.set(fbdo, path.c_str(), jsonData)) Serial.println("PASSED - Firebase.set");
+          else Serial.println("FAILED - Firebase.set");
+          if (Firebase.get(fbdo, path.c_str())){
+            Serial.println("PASSED");
+            Serial.println("PATH: " + fbdo.dataPath());
+            Serial.println("TYPE: " + fbdo.dataType());
+            Serial.print("VALUE: ");
+            if (fbdo.dataType() == "json") {
+              printResult(fbdo); //see addons/RTDBHelper.h
+            }
+            Serial.println("------------------------------------");
+            Serial.println();
+            }
           else {
-            Serial.println(fbdo.errorReason());
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            Serial.println("------------------------------------");
+            Serial.println();
           }
+        jsonData = fbdo.jsonObject();
 
-          //send_photo(image_matrix_global_arr[0]);
+        jsonData.get(resp, title_photo);
+        const char* resp_photo = resp.stringValue.c_str();
+        String parse_resp_photo = resp_photo + strlen("data:image/jpeg;base64,");
+        //Serial.println(title_photo + " = " + resp_photo);
+        Serial.println(title_photo + " = " + parse_resp_photo);
+        
+        jsonData.get(resp, title_name);
+        String resp_name = resp.stringValue;
+        Serial.println(title_name + " = " + resp_name);
+
         }
         else{
           Serial.println("Firebase.ready() - Not ready!");
