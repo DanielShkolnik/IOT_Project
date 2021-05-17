@@ -1,5 +1,3 @@
-#include "esp_camera.h"
-#include <WiFi.h>
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -18,12 +16,8 @@
 //#define CAMERA_MODEL_M5STACK_NO_PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
-#include "camera_pins.h"
-#include "fd_forward.h"
-
-
-
 #if defined(ESP32)
+#include <WiFi.h>
 #include <FirebaseESP32.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
@@ -42,12 +36,18 @@
 #include "soc/rtc_cntl_reg.h"
 #include "Base64.h"
 
+#include "esp_camera.h"
+#include "camera_pins.h"
+#include "fd_forward.h"
 
 // Remember change Tools->Partition Scheme->Huge App ***************************************
 
 //const char* ssid = "TP-LINK_RoEm2.4";
-const char* ssid = "Xiaomi_2.4G";
-const char* password = "Rmalal92M";
+//const char* ssid = "Xiaomi_2.4G";
+//const char* password = "Rmalal92M";
+
+const char* ssid = "DS OnePlus 6";
+const char* password = "b4b79794f2da";
 
 //const char* ssid = "Mi Phone";
 //const char* password = "Oo123456";
@@ -74,6 +74,9 @@ esp_err_t enroll_face_to_db(dl_matrix3du_t *aligned_face);
 esp_err_t recognize_face_from_db(dl_matrix3du_t *aligned_face);
 void init_camera();
 void print_camera_setting();
+void send_photo(dl_matrix3du_t* image_matrix);
+String FBPhoto2Base64(camera_fb_t* fb);
+esp_err_t capture_detect(camera_fb_t** fb_return);
 
 
 //Define Firebase Data object
@@ -96,38 +99,38 @@ void setup() {
   pinMode(13, INPUT);
   pinMode(4, OUTPUT);
   
-  camera_config_t config;
-  config.ledc_channel = LEDC_CHANNEL_0;
-  config.ledc_timer = LEDC_TIMER_0;
-  config.pin_d0 = Y2_GPIO_NUM;
-  config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;
-  config.pin_d3 = Y5_GPIO_NUM;
-  config.pin_d4 = Y6_GPIO_NUM;
-  config.pin_d5 = Y7_GPIO_NUM;
-  config.pin_d6 = Y8_GPIO_NUM;
-  config.pin_d7 = Y9_GPIO_NUM;
-  config.pin_xclk = XCLK_GPIO_NUM;
-  config.pin_pclk = PCLK_GPIO_NUM;
-  config.pin_vsync = VSYNC_GPIO_NUM;
-  config.pin_href = HREF_GPIO_NUM;
-  config.pin_sscb_sda = SIOD_GPIO_NUM;
-  config.pin_sscb_scl = SIOC_GPIO_NUM;
-  config.pin_pwdn = PWDN_GPIO_NUM;
-  config.pin_reset = RESET_GPIO_NUM;
-  config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
+  camera_config_t camera_config;
+  camera_config.ledc_channel = LEDC_CHANNEL_0;
+  camera_config.ledc_timer = LEDC_TIMER_0;
+  camera_config.pin_d0 = Y2_GPIO_NUM;
+  camera_config.pin_d1 = Y3_GPIO_NUM;
+  camera_config.pin_d2 = Y4_GPIO_NUM;
+  camera_config.pin_d3 = Y5_GPIO_NUM;
+  camera_config.pin_d4 = Y6_GPIO_NUM;
+  camera_config.pin_d5 = Y7_GPIO_NUM;
+  camera_config.pin_d6 = Y8_GPIO_NUM;
+  camera_config.pin_d7 = Y9_GPIO_NUM;
+  camera_config.pin_xclk = XCLK_GPIO_NUM;
+  camera_config.pin_pclk = PCLK_GPIO_NUM;
+  camera_config.pin_vsync = VSYNC_GPIO_NUM;
+  camera_config.pin_href = HREF_GPIO_NUM;
+  camera_config.pin_sscb_sda = SIOD_GPIO_NUM;
+  camera_config.pin_sscb_scl = SIOC_GPIO_NUM;
+  camera_config.pin_pwdn = PWDN_GPIO_NUM;
+  camera_config.pin_reset = RESET_GPIO_NUM;
+  camera_config.xclk_freq_hz = 20000000;
+  camera_config.pixel_format = PIXFORMAT_JPEG;
   
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
   if(psramFound()){
-    config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
+    camera_config.frame_size = FRAMESIZE_UXGA;
+    camera_config.jpeg_quality = 10;
+    camera_config.fb_count = 2;
   } else {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
+    camera_config.frame_size = FRAMESIZE_SVGA;
+    camera_config.jpeg_quality = 12;
+    camera_config.fb_count = 1;
   }
 
 #if defined(CAMERA_MODEL_ESP_EYE)
@@ -136,7 +139,7 @@ void setup() {
 #endif
 
   // camera init
-  esp_err_t err = esp_camera_init(&config);
+  esp_err_t err = esp_camera_init(&camera_config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
@@ -196,17 +199,17 @@ void setup() {
 
 #if defined(ESP8266)
   //Set the size of WiFi rx/tx buffers in the case where we want to work with large data.
-  fbdo.setBSSLBufferSize(1024, 1024);
+  fbdo.setBSSLBufferSize(16384, 16384);
 #endif
 
   //Set the size of HTTP response buffers in the case where we want to work with large data.
-  fbdo.setResponseSize(1024);
+  fbdo.setResponseSize(16384);
 
   //Set database read timeout to 1 minute (max 15 minutes)
-  Firebase.setReadTimeout(fbdo, 1000 * 60);
+  Firebase.setReadTimeout(fbdo, 1000 * 60 * 3);
   //tiny, small, medium, large and unlimited.
   //Size and its write timeout e.g. tiny (1s), small (10s), medium (30s) and large (60s).
-  Firebase.setwriteSizeLimit(fbdo, "tiny");
+  Firebase.setwriteSizeLimit(fbdo, "large");
 
   //optional, set the decimal places for float and double data to be stored in database
   Firebase.setFloatDigits(2);
@@ -225,6 +228,7 @@ void loop() {
   // put your main code here, to run repeatedly:
    buttonState = digitalRead(13);
   if (buttonState == HIGH) {
+    /*
     if (counter_global == 0) {
         for(int i=0; i<5; i++){
           esp_err_t res = capture_detect_save(&image_matrix_global_arr[i]);
@@ -236,30 +240,42 @@ void loop() {
           }
         }
     }
-
-    else if(counter_global == 1){
+    */
+    if(counter_global >= 0){
       if (Firebase.ready()){
-        taskCompleted = true;
+        camera_fb_t** fb;
+        esp_err_t res = capture_detect(fb);
+        if (res == ESP_OK) {
+          Serial.printf("HI HI - capture_detect\n");
+          taskCompleted = true;
+          Serial.printf("Test camera ready number %d\n",counter_global);
+          FirebaseJson jsonData;
+          jsonData.add("photo", FBPhoto2Base64(*fb));
+          //jsonData.add("photo", OGPhoto2Base64());
+          String photoPath = "/esp32-cam";
+          
+          Serial.printf("Test jsonData.add number %d\n",counter_global);
 
-        String path = "/Test";
-        String node;
+          if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
+            Serial.println(fbdo.dataPath());
+            Serial.println(fbdo.pushName());
+            Serial.println(fbdo.dataPath() + "/"+ fbdo.pushName());
+          } 
+          else {
+            Serial.println(fbdo.errorReason());
+          }
 
-        FirebaseJson jsonData;
-        jsonData.add("photo", Photo2Base64());
-        String photoPath = "/esp32-cam";
-        
-        if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
-          Serial.println(fbdo.dataPath());
-          Serial.println(fbdo.pushName());
-          Serial.println(fbdo.dataPath() + "/"+ fbdo.pushName());
-        } 
-        else {
-          Serial.println(fbdo.errorReason());
+          //send_photo(image_matrix_global_arr[0]);
         }
-      }
-      else{
-        Serial.println("Firebase.ready() - Not ready!");
-      }
+        else{
+          Serial.println("Firebase.ready() - Not ready!");
+        }
+        esp_camera_fb_return(*fb);
+        *fb = NULL;
+        }
+        else {
+          Serial.printf("BYE BYE - capture_detect\n");
+        }
     }
 
     else if(counter_global == 2){
@@ -303,23 +319,105 @@ void loop() {
     digitalWrite(4, LOW);
     
   }
-  delay(10);
+  delay(100);
 }
 
 
 
+/*
+void loop()
+{
+  if (Firebase.ready() && !taskCompleted)
+  {
+    
+    taskCompleted = true;
+
+    String path = "/Test";
+    String node;
+    
+  
+    FirebaseJson jsonData;
+    jsonData.add("photo", Photo2Base64());
+    String photoPath = "/esp32-cam";
+    
+    if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
+      Serial.println(fbdo.dataPath());
+      Serial.println(fbdo.pushName());
+      Serial.println(fbdo.dataPath() + "/"+ fbdo.pushName());
+    } 
+    else {
+      Serial.println(fbdo.errorReason());
+    }
+  
+
+  }
+}
+*/
+
 String Photo2Base64(dl_matrix3du_t* image_matrix) {
-    String imageFile = "data:image/jpeg;base64,";
+    String imageFile = "data:image/jpeg;base64,"; 
     char *input = (char *)image_matrix->item;
     int len = image_matrix->h * image_matrix->w * image_matrix->c;
+    Serial.printf("Photo2Base64 - LEN = %d\n", len);
     char output[base64_enc_len(3)];
-    for (int i=0;i<len;i++) {
+    for (int i=0;i<len;i+=3, input+=3) {
+      base64_encode(output, input, 3);
+      imageFile += urlencode(String(output));
+    }
+    return imageFile;
+}
+
+String FBPhoto2Base64(camera_fb_t* fb) {
+    //camera_fb_t * fb = NULL;
+    //fb = esp_camera_fb_get();  
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return "";
+    }
+  
+    String imageFile = "data:image/jpeg;base64,";
+    char *input = (char *)fb->buf;
+    Serial.printf("OGPhoto2Base64 - LEN = %d\n", fb->len);
+    //char output[base64_enc_len(fb->len)];
+    //base64_encode(output, input, fb->len);
+    //imageFile += urlencode(String(output));
+    char output[base64_enc_len(3)];
+    for (int i=0;i<fb->len;i++) {
       base64_encode(output, (input++), 3);
       if (i%3==0) imageFile += urlencode(String(output));
     }
+    esp_camera_fb_return(fb);
     
     return imageFile;
 }
+
+
+
+String OGPhoto2Base64() {
+    camera_fb_t * fb = NULL;
+    fb = esp_camera_fb_get();  
+    if(!fb) {
+      Serial.println("Camera capture failed");
+      return "";
+    }
+  
+    String imageFile = "data:image/jpeg;base64,";
+    char *input = (char *)fb->buf;
+    Serial.printf("OGPhoto2Base64 - LEN = %d\n", fb->len);
+    //char output[base64_enc_len(fb->len)];
+    //base64_encode(output, input, fb->len);
+    //imageFile += urlencode(String(output));
+    char output[base64_enc_len(3)];
+    for (int i=0;i<fb->len;i++) {
+      base64_encode(output, (input++), 3);
+      if (i%3==0) imageFile += urlencode(String(output));
+    }
+    esp_camera_fb_return(fb);
+    
+    return imageFile;
+}
+
+
 
 //https://github.com/zenmanenergy/ESP8266-Arduino-Examples/
 String urlencode(String str)
@@ -354,4 +452,36 @@ String urlencode(String str)
       yield();
     }
     return encodedString;
+}
+
+
+
+void send_photo(dl_matrix3du_t* image_matrix){
+  String imageFile = "data:image/jpeg;base64,";
+  char *input = (char *)image_matrix->item;
+  int len = image_matrix->h * image_matrix->w * image_matrix->c;
+  Serial.printf("Photo2Base64 - LEN = %d\n", len);
+  char output[base64_enc_len(3)];
+  for (int k=0; k<4; k++){
+    for (int i=0;i<len/4;i+=4, input+=4) {
+      base64_encode(output, input, 4);
+      imageFile += urlencode(String(output));
+    }
+    FirebaseJson jsonData;
+    jsonData.add("photo", imageFile);
+
+    String photoPath = "/esp32-cam";
+    
+    Serial.printf("Test jsonData.add number %d\n",counter_global);
+
+    if (Firebase.pushJSONAsync(fbdo, photoPath, jsonData)) {
+      Serial.println(fbdo.dataPath());
+      Serial.println(fbdo.pushName());
+      Serial.println(fbdo.dataPath() + "/"+ fbdo.pushName());
+    } 
+    else {
+      Serial.println(fbdo.errorReason());
+    }
+    imageFile = "";
+  }
 }

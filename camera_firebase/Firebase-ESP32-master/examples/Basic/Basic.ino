@@ -189,6 +189,7 @@ void setup()
 
 void loop()
 {
+  delay(100);
   if (Firebase.ready() && !taskCompleted)
   {
     taskCompleted = true;
@@ -351,12 +352,14 @@ String Photo2Base64() {
   
     String imageFile = "data:image/jpeg;base64,";
     char *input = (char *)fb->buf;
+    //char output[base64_enc_len(fb->len)];
+    //base64_encode(output, input, fb->len);
+    //imageFile += urlencode(String(output));
     char output[base64_enc_len(3)];
     for (int i=0;i<fb->len;i++) {
       base64_encode(output, (input++), 3);
       if (i%3==0) imageFile += urlencode(String(output));
     }
-
     esp_camera_fb_return(fb);
     
     return imageFile;
