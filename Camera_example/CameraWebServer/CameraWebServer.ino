@@ -15,20 +15,42 @@
 //#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_NO_PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
 #include "camera_pins.h"
+#include "fd_forward.h"
 
-const char* ssid = "TP-LINK_RoEm2.4";
+
+// Remember change Tools->Partition Scheme->Huge App ***************************************
+
+//const char* ssid = "TP-LINK_RoEm2.4";
+const char* ssid = "Xiaomi_2.4G";
 const char* password = "Rmalal92M";
 
+//const char* ssid = "Mi Phone";
+//const char* password = "Oo123456";
+
+int buttonState = 0;
+int counter_global = 0;
+dl_matrix3du_t *image_matrix_global_arr[5] = {NULL};
+//dl_matrix3du_t *curr_image_matrix_global = NULL;
+
 void startCameraServer();
+esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return);
+esp_err_t enroll_face_to_db(dl_matrix3du_t *aligned_face);
+esp_err_t recognize_face_from_db(dl_matrix3du_t *aligned_face);
+void init_camera();
+void print_camera_setting();
 
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
 
+  pinMode(13, INPUT);
+  pinMode(4, OUTPUT);
+  
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -99,14 +121,70 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
 
-  startCameraServer();
+  //startCameraServer();
+  init_camera();
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
-  delay(10000);
+   buttonState = digitalRead(13);
+  if (buttonState == HIGH) {
+    if (counter_global == 0) {
+        for(int i=0; i<5; i++){
+          esp_err_t res = capture_detect_save(&image_matrix_global_arr[i]);
+          if (res == ESP_OK) {
+            Serial.printf("HI HI - capture_detect_save %d\n",i);
+          }
+          else {
+            Serial.printf("BYE BYE - capture_detect_save %d\n",i);
+          }
+        }
+    }
+    else if(counter_global == 1){
+      for(int i=0; i<5; i++){
+        esp_err_t res = enroll_face_to_db(image_matrix_global_arr[i]);
+        if (res == ESP_OK) {
+          Serial.printf("HI HI - enroll_face_to_db %d\n",i);
+        }
+        else {
+          Serial.printf("BYE BYE - enroll_face_to_db %d\n",i);
+        }
+      } 
+    }
+    else if(counter_global >= 2){
+      esp_err_t res = capture_detect_save(&image_matrix_global_arr[0]);
+      if (res == ESP_OK) {
+        Serial.printf("HI HI - capture_detect_save\n");
+      }
+      else {
+        Serial.printf("BYE BYE - capture_detect_save\n");
+      }
+
+      while(recognize_face_from_db(image_matrix_global_arr[0]) != ESP_OK){
+        dl_matrix3du_free(image_matrix_global_arr[0]);
+        image_matrix_global_arr[0] = NULL;
+        res = capture_detect_save(&image_matrix_global_arr[0]);
+      }
+      res = recognize_face_from_db(image_matrix_global_arr[0]);
+      if (res == ESP_OK) {
+        Serial.println("HI HI - recognize_face_from_db");
+      }
+      else {
+        Serial.println("BYE BYE - recognize_face_from_db");
+      }
+    }
+    // turn LED on
+    digitalWrite(4, HIGH);
+    counter_global++;
+  } else {
+    // turn LED off
+    digitalWrite(4, LOW);
+    
+  }
+  delay(10);
 }

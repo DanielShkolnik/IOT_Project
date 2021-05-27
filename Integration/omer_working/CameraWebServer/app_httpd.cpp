@@ -798,7 +798,7 @@ esp_err_t capture_detect_save(dl_matrix3du_t **image_matrix_return){
 
   sensor_t * s = esp_camera_sensor_get();
   //s->set_pixformat(s,PIXFORMAT_RGB888);
-  s->set_framesize(s, FRAMESIZE_CIF);
+  s->set_framesize(s, FRAMESIZE_QCIF);
   s->set_quality(s, 60);
   
   static int64_t last_frame = 0;
@@ -949,4 +949,120 @@ void print_camera_setting(){
     Serial.printf("\"face_detect\":%u,\n", detection_enabled);
     Serial.printf("\"face_enroll\":%u,\n", is_enrolling);
     Serial.printf("\"face_recognize\":%u\n", recognition_enabled);
+}
+
+
+
+
+camera_fb_t* capture_detect(){
+  camera_fb_t* fb;
+  esp_err_t res = ESP_OK;
+  dl_matrix3du_t *image_matrix = NULL;
+  dl_matrix3du_t *aligned_face = NULL;
+  bool detected = false;
+  int face_id = 0;
+  int64_t fr_start = 0;
+  int64_t fr_ready = 0;
+  int64_t fr_face = 0;
+  int64_t fr_recognize = 0;
+  int64_t fr_encode = 0;
+
+  sensor_t * s = esp_camera_sensor_get();
+  //s->set_pixformat(s,PIXFORMAT_RGB888);
+  s->set_framesize(s, FRAMESIZE_QVGA);
+  s->set_quality(s, 60);
+  
+  static int64_t last_frame = 0;
+  if(!last_frame) {
+      last_frame = esp_timer_get_time();
+  }
+
+  for(int i=0; i<30; i++){
+    delay(300);
+    detected = false;
+    face_id = 0;
+    fb = esp_camera_fb_get();
+    while(fb->len > 4000){
+        esp_camera_fb_return(fb);
+        fb = NULL;
+        fb = esp_camera_fb_get();
+        delay(300);
+        Serial.printf("while(fb->len > 4000) fb->len=%d\n", fb->len);
+    }
+    Serial.printf("while(fb->len < 4000) fb->len=%d\n", fb->len);
+    if (!fb) {
+        Serial.println("Camera capture failed");
+        res = ESP_FAIL;
+    } 
+    else {
+      fr_start = esp_timer_get_time();
+      fr_ready = fr_start;
+      fr_face = fr_start;
+      fr_encode = fr_start;
+      fr_recognize = fr_start;
+      if(fb->width > 400){
+        Serial.println("Error: fb->width > 400");
+      } 
+      else{
+        image_matrix = dl_matrix3du_alloc(1, fb->width, fb->height, 3);
+        aligned_face = dl_matrix3du_alloc(1, FACE_WIDTH, FACE_HEIGHT, 3); 
+        if (!image_matrix || !aligned_face) {
+            Serial.println("dl_matrix3du_alloc failed");
+            res = ESP_FAIL;
+        }
+        else {
+          if(!fmt2rgb888(fb->buf, fb->len, fb->format, image_matrix->item)){
+            Serial.println("fmt2rgb888 failed");
+            res = ESP_FAIL;
+          } 
+          else {
+            fr_ready = esp_timer_get_time();
+            box_array_t *net_boxes = NULL;
+            net_boxes = face_detect(image_matrix, &mtmn_config);
+            fr_face = esp_timer_get_time();
+            fr_recognize = fr_face;
+            if (net_boxes || fb->format != PIXFORMAT_JPEG){
+              if(net_boxes){
+                if (align_face(net_boxes, image_matrix, aligned_face) == ESP_OK){
+                  detected = true;
+                  Serial.println("Face Detected");
+                  Serial.printf("check if *fb_return = fb - valid\n");
+                  return fb;
+                }
+                /*
+                if(recognition_enabled){
+                  face_id = run_face_recognition(image_matrix, net_boxes);
+                }
+                */
+                fr_recognize = esp_timer_get_time();
+                //draw_face_boxes(image_matrix, net_boxes, face_id);
+                free(net_boxes->score);
+                free(net_boxes->box);
+                free(net_boxes->landmark);
+                free(net_boxes);
+              }
+              esp_camera_fb_return(fb);
+              fb = NULL;
+            } 
+            fr_encode = esp_timer_get_time();
+          }
+          dl_matrix3du_free(image_matrix);
+          if (!detected){
+            dl_matrix3du_free(aligned_face);
+          }
+        }
+      }
+    }
+    
+    if(fb){
+      esp_camera_fb_return(fb);
+      fb = NULL;
+    }
+    if(res != ESP_OK || detected){
+        break;
+    }
+  }
+
+  last_frame = 0;
+  return NULL;
 }
