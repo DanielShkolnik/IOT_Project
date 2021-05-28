@@ -10,6 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
 class UpdatePictureScreen extends StatefulWidget {
+  final String uid;
+  const UpdatePictureScreen({required this.uid});
+
   @override
   _UpdatePictureScreenState createState() => _UpdatePictureScreenState();
 }
@@ -21,6 +24,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
   @override
   Widget build(BuildContext context) {
     final fileName = file != null ? basename(file!.path) : 'No File Selected';
+    //final fileName = file != null ? widget.uid : 'No File Selected';
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +74,8 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
   Future uploadFile() async {
     if (file == null) return;
 
-    final fileName = basename(file!.path);
+    //final fileName = basename(file!.path);
+    final fileName = widget.uid;
     final destination = 'files/$fileName';
 
     task = FirebaseApi.uploadFile(destination, file!);

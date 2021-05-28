@@ -221,7 +221,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               ElevatedButton(onPressed: () {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => UpdatePictureScreen(),
+                  builder: (context) => UpdatePictureScreen(uid: widget._user.uid),
                 ),
               );
             },
