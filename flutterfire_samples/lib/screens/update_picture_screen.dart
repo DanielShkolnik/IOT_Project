@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,8 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
 class UpdatePictureScreen extends StatefulWidget {
-  final String uid;
-  const UpdatePictureScreen({required this.uid});
+  final User user;
+  const UpdatePictureScreen({required this.user});
 
   @override
   _UpdatePictureScreenState createState() => _UpdatePictureScreenState();
@@ -79,7 +79,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
     if (file == null) return;
 
     //final fileName = basename(file!.path);
-    final fileName = widget.uid;
+    final fileName = widget.user.displayName! + "_" + widget.user.uid;
     final destination = 'users/$fileName';
 
     task = FirebaseApi.uploadFile(destination, file!);

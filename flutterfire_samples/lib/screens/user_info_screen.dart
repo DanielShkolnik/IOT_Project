@@ -66,7 +66,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => UpdatePictureScreen(uid: widget._user.uid),
+                  builder: (context) => UpdatePictureScreen(user: widget._user),
                 ),
               );
             },)
@@ -233,7 +233,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               ElevatedButton(onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => JoinQueueScreen(),
+                  builder: (context) => JoinQueueScreen(uid: widget._user.uid),
                 ),
               );
             },

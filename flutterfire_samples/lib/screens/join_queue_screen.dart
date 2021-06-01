@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'queue_status_screen.dart';
 
 class JoinQueueScreen extends StatelessWidget {
- 
+  final String uid;
+  JoinQueueScreen({required this.uid});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +21,7 @@ class JoinQueueScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => QueueStatusScreen(),
+                  builder: (context) => QueueStatusScreen(uid: uid),
                 ),
               );
             },)],

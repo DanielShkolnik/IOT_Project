@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QueueStatusScreen extends StatefulWidget {
-  //final String uid;
-  //const QueueStatusScreen({required this.uid});
+  final String uid;
+  const QueueStatusScreen({required this.uid});
 
   @override
   _QueueStatusScreenState createState() => _QueueStatusScreenState();
@@ -47,8 +47,14 @@ class _QueueStatusScreenState extends State<QueueStatusScreen>{
 
               return new ListView(
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                  return new ListTile(
-                    title: new Text(document.get('user')),
+                  return new Container(
+                    child:ListTile(
+                    title: new Text(document.get('user').split("_")[0], style: TextStyle(color: Colors.black, fontSize: 20),),
+                    subtitle: new Text(document.get('timestamp').toDate().toString(), style: TextStyle(color: Colors.black,),),
+                    ),
+                    height: 70,
+                    color: (document.get('user').split("_")[1] == widget.uid) ? Colors.orange : Colors.grey,
+                    margin: EdgeInsets.all(10.0),
                   );
                 }).toList(),
               );
