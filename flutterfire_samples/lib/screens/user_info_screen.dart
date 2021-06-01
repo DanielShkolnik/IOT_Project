@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfire_samples/res/custom_colors.dart';
+import 'package:flutterfire_samples/screens/queue_status_screen.dart';
 import 'package:flutterfire_samples/screens/sign_in_screen.dart';
 import 'package:flutterfire_samples/screens/update_picture_screen.dart';
 import 'package:flutterfire_samples/utils/authentication.dart';
 import 'package:flutterfire_samples/widgets/app_bar_title.dart';
+import 'Join_queue_screen.dart';
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({Key? key, required User user})
@@ -59,6 +61,16 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         elevation: 0,
         backgroundColor: CustomColors.firebaseNavy,
         title: AppBarTitle(),
+        actions: [
+          IconButton(icon: Icon(Icons.photo_camera),
+          onPressed: () {
+              Navigator.push(context,
+                MaterialPageRoute(
+                  builder: (context) => UpdatePictureScreen(uid: widget._user.uid),
+                ),
+              );
+            },)
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -221,11 +233,11 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               ElevatedButton(onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => UpdatePictureScreen(uid: widget._user.uid),
+                  builder: (context) => JoinQueueScreen(),
                 ),
               );
             },
-            child: Text("Update Picture")),
+            child: Text("Join Queues")),
               SizedBox(height: 24.0),
               Text(
                 'You are now signed in using Firebase Authentication. To sign out of your account click the "Sign Out" button below.',
