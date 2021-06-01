@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfire_samples/res/custom_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QueueStatusScreen extends StatefulWidget {
@@ -18,13 +19,13 @@ class _QueueStatusScreenState extends State<QueueStatusScreen>{
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.greenAccent),
             onPressed: () => Navigator.of(context).pop(),
           ),
-        title: Text("Machine Queue Status"),
+        title: Text("Machine Queue Status", style: TextStyle(color: Colors.greenAccent)),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.list_rounded),
+            icon: const Icon(Icons.list_rounded, color: Colors.greenAccent),
             tooltip: 'Queue status',
             onPressed: () {
               // handle the press
@@ -49,7 +50,7 @@ class _QueueStatusScreenState extends State<QueueStatusScreen>{
                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                   return new Container(
                     child:ListTile(
-                    title: new Text(document.get('user').split("_")[0], style: TextStyle(color: Colors.black, fontSize: 20),),
+                    title: new Text(document.get('user').split("_")[0], style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
                     subtitle: new Text(document.get('timestamp').toDate().toString(), style: TextStyle(color: Colors.black,),),
                     ),
                     height: 70,

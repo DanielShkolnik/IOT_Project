@@ -111,7 +111,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   padding: const EdgeInsets.all(16.0),
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      CustomColors.firebaseOrange,
+                      Colors.orange,
                     ),
                   ),
                 )
@@ -122,7 +122,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          CustomColors.firebaseOrange,
+                          Colors.orange,
                         ),
                         shape: MaterialStateProperty.all(
                           RoundedRectangleBorder(
@@ -169,7 +169,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: CustomColors.firebaseGrey,
+                            color: Colors.black,
                             letterSpacing: 2,
                           ),
                         ),

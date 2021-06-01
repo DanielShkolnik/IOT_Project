@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfire_samples/res/custom_colors.dart';
 
 class ButtonWidget extends StatelessWidget {
   final IconData icon;
@@ -15,7 +16,7 @@ class ButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Color.fromRGBO(29, 194, 95, 1),
+          primary: Colors.orange,
           minimumSize: Size.fromHeight(50),
         ),
         child: buildContent(),
@@ -25,11 +26,11 @@ class ButtonWidget extends StatelessWidget {
   Widget buildContent() => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 28),
+          Icon(icon, size: 28, color: Colors.black,),
           SizedBox(width: 16),
           Text(
             text,
-            style: TextStyle(fontSize: 22, color: Colors.white),
+            style: TextStyle(fontSize: 22, color: Colors.black),
           ),
         ],
       );

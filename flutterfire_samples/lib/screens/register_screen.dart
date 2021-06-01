@@ -22,11 +22,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passwordFocusNode.unfocus();
       },
       child: Scaffold(
-        backgroundColor: CustomColors.firebaseNavy,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: CustomColors.firebaseNavy,
-          title: AppBarTitle(),
+          title: Text("Sign up to IOTrain", style: TextStyle(color: Colors.greenAccent),),
         ),
         body: SafeArea(
           child: Padding(

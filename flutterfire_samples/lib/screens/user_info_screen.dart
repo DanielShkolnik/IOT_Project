@@ -56,13 +56,13 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CustomColors.firebaseNavy,
+      //backgroundColor: Colors.black,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: CustomColors.firebaseNavy,
-        title: AppBarTitle(),
+        //backgroundColor: CustomColors.firebaseNavy,
+        title: Text("IOTrain", style: TextStyle(color: Colors.greenAccent),),
         actions: [
-          IconButton(icon: Icon(Icons.photo_camera),
+          IconButton(icon: Icon(Icons.photo_camera, color: Colors.greenAccent,),
           onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
@@ -100,7 +100,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               Text(
                 'Hello',
                 style: TextStyle(
-                  color: CustomColors.firebaseGrey,
+                  color: Colors.orange,
                   fontSize: 26,
                 ),
               ),
@@ -108,7 +108,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               Text(
                 widget._user.displayName!,
                 style: TextStyle(
-                  color: CustomColors.firebaseYellow,
+                  color: Colors.orange,
                   fontSize: 26,
                 ),
               ),
@@ -237,7 +237,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                 ),
               );
             },
-            child: Text("Join Queues")),
+            style: ElevatedButton.styleFrom(primary: Colors.orange),
+            child: Text("Join Queues", style: TextStyle(color: Colors.black, fontSize: 20),)),
               SizedBox(height: 24.0),
               Text(
                 'You are now signed in using Firebase Authentication. To sign out of your account click the "Sign Out" button below.',

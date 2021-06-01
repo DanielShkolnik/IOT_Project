@@ -46,7 +46,7 @@ class CustomFormField extends StatelessWidget {
       validator: (value) => _validator(value!),
       decoration: InputDecoration(
         labelText: _label,
-        labelStyle: TextStyle(color: CustomColors.firebaseYellow),
+        labelStyle: TextStyle(color: Colors.greenAccent),
         hintText: _hint,
         hintStyle: TextStyle(
           color: CustomColors.firebaseGrey.withOpacity(0.5),

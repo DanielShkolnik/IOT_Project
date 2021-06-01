@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'queue_status_screen.dart';
+import 'package:flutterfire_samples/res/custom_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -13,13 +14,13 @@ class JoinQueueScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.greenAccent),
             onPressed: () => Navigator.of(context).pop(),
           ),
-        title: Text("Join Machine Queue"),
+        title: Text("Join Machine Queue", style: TextStyle(color: Colors.greenAccent),),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.list_rounded),
+            icon: const Icon(Icons.list_rounded, color: Colors.greenAccent,),
             tooltip: 'Queue status',
             onPressed: () {
               Navigator.push(context,
@@ -42,11 +43,13 @@ class JoinQueueScreen extends StatelessWidget {
                 'user':  user.displayName! + "_" + user.uid
               });
             },
-            child: Text("Join Machine 1 queue")),
+            style: ElevatedButton.styleFrom(primary: Colors.orange),
+            child: Text("Join Machine 1 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
             ElevatedButton(onPressed: () {
           
             },
-            child: Text("Join Machine 2 queue")),
+            style: ElevatedButton.styleFrom(primary: Colors.orange),
+            child: Text("Join Machine 2 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
           ])
         )
       )

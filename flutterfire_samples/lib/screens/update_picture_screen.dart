@@ -24,15 +24,14 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
   @override
   Widget build(BuildContext context) {
     final fileName = file != null ? basename(file!.path) : 'No File Selected';
-    //final fileName = file != null ? widget.uid : 'No File Selected';
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.greenAccent),
             onPressed: () => Navigator.of(context).pop(),
           ),
-        title: Text("update picture screen"),
+        title: Text("update picture screen", style: TextStyle(color: Colors.greenAccent),),
         centerTitle: true,
       ),
       body: Container(
@@ -49,7 +48,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
               SizedBox(height: 8),
               Text(
                 fileName,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(color: Colors.greenAccent, fontSize: 16, fontWeight: FontWeight.w500),
               ),
               SizedBox(height: 48),
               ButtonWidget(
@@ -103,7 +102,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
 
             return Text(
               '$percentage %',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
             );
           } else {
             return Container();

@@ -86,7 +86,7 @@ class _SignInFormState extends State<SignInForm> {
                     child: ElevatedButton(
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                          CustomColors.firebaseOrange,
+                          Colors.orange,
                         ),
                         shape: MaterialStateProperty.all(
                           RoundedRectangleBorder(
@@ -132,7 +132,7 @@ class _SignInFormState extends State<SignInForm> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: CustomColors.firebaseGrey,
+                            color: Colors.black,
                             letterSpacing: 2,
                           ),
                         ),

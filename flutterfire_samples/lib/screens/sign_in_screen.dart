@@ -40,7 +40,6 @@ class _SignInScreenState extends State<SignInScreen> {
         _passwordFocusNode.unfocus();
       },
       child: Scaffold(
-        backgroundColor: CustomColors.firebaseNavy,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(
@@ -60,23 +59,24 @@ class _SignInScreenState extends State<SignInScreen> {
                       Flexible(
                         flex: 1,
                         child: Image.asset(
-                          'assets/firebase_logo.png',
+                          'lib/assets/gym_logo.png',
                           height: 160,
                         ),
                       ),
                       SizedBox(height: 20),
                       Text(
-                        'FlutterFire',
-                        style: TextStyle(
-                          color: CustomColors.firebaseYellow,
-                          fontSize: 40,
-                        ),
-                      ),
-                      Text(
-                        'Authentication',
+                        'IOTrain',
                         style: TextStyle(
                           color: CustomColors.firebaseOrange,
                           fontSize: 40,
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                      Text(
+                        'smarter way to workout',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 30,
                         ),
                       ),
                     ],
@@ -96,15 +96,11 @@ class _SignInScreenState extends State<SignInScreen> {
                     }
                     return CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        CustomColors.firebaseOrange,
+                        Colors.orange,
                       ),
                     );
                   },
                 )
-                // SignInForm(
-                //   emailFocusNode: _emailFocusNode,
-                //   passwordFocusNode: _passwordFocusNode,
-                // ),
               ],
             ),
           ),
