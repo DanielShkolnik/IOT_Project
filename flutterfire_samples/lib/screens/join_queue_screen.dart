@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'queue_status_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class JoinQueueScreen extends StatelessWidget {
-  final String uid;
-  JoinQueueScreen({required this.uid});
+  final User user;
+  final CollectionReference queue1 = FirebaseFirestore.instance.collection('queue1');
+  JoinQueueScreen({required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,7 @@ class JoinQueueScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => QueueStatusScreen(uid: uid),
+                  builder: (context) => QueueStatusScreen(uid: user.uid),
                 ),
               );
             },)],
@@ -34,11 +37,14 @@ class JoinQueueScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: () {
-              
+                queue1.doc(user.uid).set({
+                'timestamp': Timestamp.now(),
+                'user':  user.displayName! + "_" + user.uid
+              });
             },
             child: Text("Join Machine 1 queue")),
             ElevatedButton(onPressed: () {
-              
+          
             },
             child: Text("Join Machine 2 queue")),
           ])
