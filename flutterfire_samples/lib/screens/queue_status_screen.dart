@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QueueStatusScreen extends StatefulWidget {
   //final String uid;
@@ -9,6 +10,9 @@ class QueueStatusScreen extends StatefulWidget {
 }
 
 class _QueueStatusScreenState extends State<QueueStatusScreen>{
+  final Stream<QuerySnapshot> _queue1Stream = FirebaseFirestore.instance.collection('queue1').orderBy("timestamp", descending: false).snapshots();
+  //final Stream<QuerySnapshot> _queue2Stream = FirebaseFirestore.instance.collection('queue2').snapshots();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,19 +34,26 @@ class _QueueStatusScreenState extends State<QueueStatusScreen>{
       body: Container(
         padding: EdgeInsets.all(32),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(onPressed: () {
-              
-            },
-            child: Text("Join Machine 1 queue")),
-            ElevatedButton(onPressed: () {
-              
-            },
-            child: Text("Join Machine 2 queue")),
-          ])
-        )
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _queue1Stream,
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return Text('Something went wrong');
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Text("Loading");
+              }
+
+              return new ListView(
+                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  return new ListTile(
+                    title: new Text(document.get('user')),
+                  );
+                }).toList(),
+              );
+            })
+          )
       )
     );
   }
