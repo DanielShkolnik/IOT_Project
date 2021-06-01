@@ -28,6 +28,10 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         title: Text("update picture screen"),
         centerTitle: true,
       ),
@@ -76,7 +80,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
 
     //final fileName = basename(file!.path);
     final fileName = widget.uid;
-    final destination = 'files/$fileName';
+    final destination = 'users/$fileName';
 
     task = FirebaseApi.uploadFile(destination, file!);
     setState(() {});

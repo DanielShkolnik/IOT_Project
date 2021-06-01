@@ -20,7 +20,7 @@ class _SignInScreenState extends State<SignInScreen> {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      Navigator.of(context).pushReplacement(
+      Navigator.push(context,
         MaterialPageRoute(
           builder: (context) => UserInfoScreen(
             user: user,
