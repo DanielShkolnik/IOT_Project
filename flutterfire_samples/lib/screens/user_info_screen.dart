@@ -108,8 +108,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               Text(
                 widget._user.displayName!,
                 style: TextStyle(
-                  color: Colors.orange,
-                  fontSize: 26,
+                  color: Colors.orange[800],
+                  fontSize: 34,
                 ),
               ),
               SizedBox(height: 24.0),

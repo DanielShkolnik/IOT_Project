@@ -151,21 +151,21 @@ class _SignInScreenState extends State<SignInScreen> {
                       Flexible(
                         flex: 1,
                         child: Image.asset(
-                          'assets/logo.png',
-                          height: 160,
+                          'assets/logo2.png',
+                          height: 120,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      //SizedBox(height: 5),
                       Text(
                         'IOTrain',
                         style: TextStyle(
-                          color: CustomColors.firebaseOrange,
-                          fontSize: 40,
+                          color: Colors.orange[800],
+                          fontSize: 50,
                           fontWeight: FontWeight.bold
                         ),
                       ),
                       Text(
-                        'smarter way to workout',
+                        'Smarter way to workout',
                         style: TextStyle(
                           color: Colors.orange,
                           fontSize: 30,
