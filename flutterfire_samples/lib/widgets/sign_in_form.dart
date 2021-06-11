@@ -116,6 +116,12 @@ class _SignInFormState extends State<SignInForm> {
                           );
 
                           if (user != null) {
+                            String? fcmToken = await _fcm.getToken();
+                            users.doc(user.displayName! + "_" + user.uid).set({
+                            'user':  user.displayName! + "_" + user.uid,
+                            'fcm_token': fcmToken,
+                            'queues':[]
+                            });
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => UserInfoScreen(
