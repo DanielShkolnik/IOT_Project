@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutterfire_samples/screens/sign_in_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-<<<<<<< HEAD
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-=======
 import 'package:firebase_analytics/firebase_analytics.dart';
->>>>>>> 0c3ec6936ee730768349e0e93d06b69a1a414dfb
 
 
   Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
