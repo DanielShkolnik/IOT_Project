@@ -78,11 +78,12 @@ class _QueueStatusScreenState extends State<QueueStatusScreen>{
           ),
         title: Text("Machine Queue Status", style: TextStyle(color: Colors.greenAccent)),
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.list_rounded, color: Colors.greenAccent),
-            tooltip: 'Queue status',
-            onPressed: () {
-            },)],
+          // IconButton(
+          //   icon: const Icon(Icons.list_rounded, color: Colors.greenAccent),
+          //   tooltip: 'Queue status',
+          //   onPressed: () {
+          //   },)
+          ],
         centerTitle: true,
       ),
       body: Container(
