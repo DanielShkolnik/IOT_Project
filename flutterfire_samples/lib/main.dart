@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterfire_samples/screens/sign_in_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 
   Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -10,12 +10,24 @@ import 'package:firebase_analytics/firebase_analytics.dart';
   print("Handling a background message: ${message.messageId}");
 }
 
-void main() {
+AndroidNotificationChannel channel = const AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+      'This channel is used for important notifications.', // description
+      importance: Importance.high,
+    );
+
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+void main() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
   print('Got a message whilst in the foreground!');
   print('Message data: ${message.data}');
+  AndroidFlutterLocalNotificationsPlugin().createNotificationChannel(channel);
   });
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 

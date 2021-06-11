@@ -5,6 +5,8 @@ import 'package:flutterfire_samples/screens/register_screen.dart';
 import 'package:flutterfire_samples/screens/user_info_screen.dart';
 import 'package:flutterfire_samples/utils/authentication.dart';
 import 'package:flutterfire_samples/utils/validator.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'custom_form_field.dart';
 
@@ -28,6 +30,9 @@ class _SignInFormState extends State<SignInForm> {
   final _signInFormKey = GlobalKey<FormState>();
 
   bool _isSigningIn = false;
+
+  final CollectionReference users = FirebaseFirestore.instance.collection('users');
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
 
   @override
   Widget build(BuildContext context) {
