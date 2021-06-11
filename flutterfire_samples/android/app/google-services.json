@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "850558766559",
+    "firebase_url": "https://iotrain-49a8d-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "iotrain-49a8d",
+    "storage_bucket": "iotrain-49a8d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850558766559:android:3549ae84b774500ae9886a",
+        "android_client_info": {
+          "package_name": "com.example.flutterfire_samples"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "850558766559-sa42e2jc9rpelqp9ccncpl1f6qj7261t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQb9uOZJZnHilpFjo9R4RNSLBFHp5EwJ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "850558766559-sa42e2jc9rpelqp9ccncpl1f6qj7261t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

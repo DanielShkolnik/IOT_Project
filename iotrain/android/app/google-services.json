@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1024711325691",
+    "project_id": "iotraining-8a95d",
+    "storage_bucket": "iotraining-8a95d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024711325691:android:67c886ee1f2e834b153d5e",
+        "android_client_info": {
+          "package_name": "com.iot.technion.iotrain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1024711325691-vh7g3s72frvvbjdr6smavrl74afjd1du.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA36xsW-UpFVYtrkCIY_0CtMILsWHXmQbw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1024711325691-vh7g3s72frvvbjdr6smavrl74afjd1du.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

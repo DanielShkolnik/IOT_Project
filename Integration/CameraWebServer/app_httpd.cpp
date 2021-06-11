@@ -999,6 +999,7 @@ camera_fb_t* capture_detect(){
     detected = false;
     face_id = 0;
     fb = esp_camera_fb_get();
+    /*
     while(fb->len > 4000){
         esp_camera_fb_return(fb);
         fb = NULL;
@@ -1006,6 +1007,7 @@ camera_fb_t* capture_detect(){
         delay(300);
         Serial.printf("while(fb->len > 4000) fb->len=%d\n", fb->len);
     }
+    */
     Serial.printf("while(fb->len < 4000) fb->len=%d\n", fb->len);
     if (!fb) {
         Serial.println("Camera capture failed");
@@ -1028,6 +1030,7 @@ camera_fb_t* capture_detect(){
             res = ESP_FAIL;
         }
         else {
+          Serial.printf("fb->format = %d\n", fb->format);
           if(!fmt2rgb888(fb->buf, fb->len, fb->format, image_matrix->item)){
             Serial.println("fmt2rgb888 failed");
             res = ESP_FAIL;
@@ -1044,7 +1047,7 @@ camera_fb_t* capture_detect(){
                   detected = true;
                   Serial.println("Face Detected");
                   Serial.printf("check if *fb_return = fb - valid\n");
-                  return fb;
+
                 }
                 /*
                 if(recognition_enabled){
@@ -1058,20 +1061,18 @@ camera_fb_t* capture_detect(){
                 free(net_boxes->landmark);
                 free(net_boxes);
               }
-              esp_camera_fb_return(fb);
-              fb = NULL;
             } 
             fr_encode = esp_timer_get_time();
           }
-          dl_matrix3du_free(image_matrix);
-          if (!detected){
-            dl_matrix3du_free(aligned_face);
-          }
+          if(image_matrix) dl_matrix3du_free(image_matrix);
+          if(aligned_face) dl_matrix3du_free(aligned_face);
+          image_matrix = NULL;
+          aligned_face = NULL;
         }
       }
     }
     
-    if(fb){
+    if(detected == false){
       esp_camera_fb_return(fb);
       fb = NULL;
     }
@@ -1079,9 +1080,8 @@ camera_fb_t* capture_detect(){
         break;
     }
   }
-
   last_frame = 0;
-  return NULL;
+  return fb;
 }
 
 
@@ -1104,7 +1104,7 @@ dl_matrix3du_t* detect_matrix(camera_fb_t* fb){
   
   static int64_t last_frame = 0;
   if(!last_frame) {
-      last_frame = esp_timer_get_time();
+    last_frame = esp_timer_get_time();
   }
 
     detected = false;
