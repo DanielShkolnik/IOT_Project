@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'queue_status_screen.dart';
-import 'package:flutterfire_samples/res/custom_colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'queue.dart';
 
 class JoinQueueScreen extends StatelessWidget {
   final User user;
@@ -29,7 +29,7 @@ class JoinQueueScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(context,
                 MaterialPageRoute(
-                  builder: (context) => QueueStatusScreen(uid: user.uid),
+                  builder: (context) => QueueStatusScreen(user: user),
                 ),
               );
             },)],
@@ -41,30 +41,24 @@ class JoinQueueScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(onPressed: () async {
-                String? fcmToken = await _fcm.getToken();
-                http.Response response = await http.post(
-                Uri.parse('https://us-central1-iotrain-49a8d.cloudfunctions.net/api/add_user'),
-                body: {
-                  'device_id': '1',
-                  'user': user.displayName! + "_" + user.uid,
-                  'fcm_token': fcmToken
-                },
-                );
-                var jsonResponse = jsonDecode(response.body);
-                print(jsonResponse);
-
-                // queue1.doc(user.uid).set({
-                // 'timestamp': Timestamp.now(),
-                // 'user':  user.displayName! + "_" + user.uid});
+              ElevatedButton(onPressed: () {
+                Navigator.push(context,
+                MaterialPageRoute(
+                  builder: (context) => QueueScreen(user: user, device: '1',),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(primary: Colors.orange),
-            child: Text("Join Machine 1 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
+            child: Text("Machine 1 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
             ElevatedButton(onPressed: () {
-          
+              Navigator.push(context,
+                MaterialPageRoute(
+                  builder: (context) => QueueScreen(user: user, device: '2',),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(primary: Colors.orange),
-            child: Text("Join Machine 2 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
+            child: Text("Machine 2 queue", style: TextStyle(color: Colors.black, fontSize: 20))),
           ])
         )
       )
