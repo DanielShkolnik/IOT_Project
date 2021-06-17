@@ -6,6 +6,7 @@ import 'package:flutterfire_samples/screens/sign_in_screen.dart';
 import 'package:flutterfire_samples/screens/update_picture_screen.dart';
 import 'package:flutterfire_samples/utils/authentication.dart';
 import 'Join_queue_screen.dart';
+import 'progress.dart';
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({Key? key, required User user})
@@ -248,7 +249,16 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             },
             style: ElevatedButton.styleFrom(primary: Colors.orange),
             child: Text(" My Queues ", style: TextStyle(color: Colors.black, fontSize: 20),)),
-              SizedBox(height: 150.0),
+            ElevatedButton(onPressed: () {
+              Navigator.push(context,
+                MaterialPageRoute(
+                  builder: (context) => ProgressScreen(user: widget._user),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(primary: Colors.orange),
+            child: Text("My Progress", style: TextStyle(color: Colors.black, fontSize: 20),)),
+              SizedBox(height: 100.0),
               Text(
                 'You are now signed in using Firebase Authentication. To sign out of your account click the "Sign Out" button below.',
                 style: TextStyle(
