@@ -78,7 +78,7 @@ class _UpdatePictureScreenState extends State<UpdatePictureScreen> {
     if (file == null) return;
 
     //final fileName = basename(file!.path);
-    final fileName = widget.user.displayName! + "_" + widget.user.uid;
+    final fileName = widget.user.displayName! + "_" + widget.user.uid + ".jpg";
     final destination = 'users/$fileName';
 
     task = FirebaseApi.uploadFile(destination, file!);
