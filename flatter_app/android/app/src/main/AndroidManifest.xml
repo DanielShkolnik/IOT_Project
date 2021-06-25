@@ -2,8 +2,8 @@
     package="com.example.flutterfire_samples">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="flutterfire_samples"
-        android:icon="@mipmap/ic_launcher">
+        android:label="IOTrain"
+        android:icon="@mipmap/logo2">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

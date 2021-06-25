@@ -5,6 +5,8 @@ import 'package:flutterfire_samples/screens/sign_in_screen.dart';
 import 'package:flutterfire_samples/screens/user_info_screen.dart';
 import 'package:flutterfire_samples/utils/authentication.dart';
 import 'package:flutterfire_samples/utils/validator.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'custom_form_field.dart';
 
@@ -31,6 +33,9 @@ class _RegisterFormState extends State<RegisterForm> {
   final _registerFormKey = GlobalKey<FormState>();
 
   bool _isSingningUp = false;
+
+  final CollectionReference users = FirebaseFirestore.instance.collection('users');
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
 
   Route _routeToSignInScreen() {
     return PageRouteBuilder(
@@ -148,6 +153,12 @@ class _RegisterFormState extends State<RegisterForm> {
                           );
 
                           if (user != null) {
+                            String? fcmToken = await _fcm.getToken();
+                            users.doc(user.displayName! + "_" + user.uid).set({
+                            'user':  user.displayName! + "_" + user.uid,
+                            'fcm_token': fcmToken,
+                            'queues':[]
+                            });
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => UserInfoScreen(

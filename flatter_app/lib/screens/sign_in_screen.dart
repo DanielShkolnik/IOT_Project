@@ -165,7 +165,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ),
                       Text(
-                        'Smarter way to workout',
+                        'Get your workout in order',
                         style: TextStyle(
                           color: Colors.orange,
                           fontSize: 30,
