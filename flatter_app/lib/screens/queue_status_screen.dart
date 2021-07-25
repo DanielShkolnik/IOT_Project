@@ -15,33 +15,6 @@ class QueueStatusScreen extends StatefulWidget {
   _QueueStatusScreenState createState() => _QueueStatusScreenState();
 }
 
-// List<Stream<QuerySnapshot>> get_streams(User user, DocumentReference userdoc){
-//     var arr = userdoc.get('queues');
-// }
-
-// Widget getStreams(BuildContext context, Stream<QuerySnapshot> _userStream){
-//   return StreamBuilder<QuerySnapshot>(
-//       stream: _userStream,
-//       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-//         if (snapshot.hasError) {
-//           return Text('Something went wrong');
-//         }
-
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return Text("Loading");
-//         }
-
-//         return new ListView(
-//           children: snapshot.data.docs.map((DocumentSnapshot document) {
-//           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-//             return new ListTile(
-//               title: new Text(data['full_name']),
-//               subtitle: new Text(data['company']),
-//             );
-//           }).toList(),
-//         );
-// }
-
 class _QueueStatusScreenState extends State<QueueStatusScreen>{
   late Stream<DocumentSnapshot> user_stream;// = FirebaseFirestore.instance.collection('queue1').orderBy("timestamp", descending: false).snapshots();
   //final Stream<QuerySnapshot> _queue2Stream = FirebaseFirestore.instance.collection('queue2').snapshots();

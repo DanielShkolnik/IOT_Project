@@ -18,8 +18,7 @@ class QueueScreen extends StatefulWidget {
 class _QueueScreenState extends State<QueueScreen>{
   late CollectionReference queueref;
   late Stream<QuerySnapshot> _queueStream;// = FirebaseFirestore.instance.collection(widget.queue).orderBy("timestamp", descending: false).snapshots();
-  //final Stream<QuerySnapshot> _queue2Stream = FirebaseFirestore.instance.collection('queue2').snapshots();
-
+  
   @override
   Widget build(BuildContext context) {
     queueref = FirebaseFirestore.instance.collection('queue' + widget.device);
@@ -70,7 +69,30 @@ class _QueueScreenState extends State<QueueScreen>{
                     child:ListTile(
                     title: new Text(document.get('user').split("_")[0], style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),),
                     subtitle: new Text(document.get('timestamp').toDate().toString(), style: TextStyle(color: Colors.black,),),
-                    ),
+                    trailing: (document.get('user').split("_")[1] == widget.user.uid) ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      IconButton(
+                      icon: Icon(
+                      Icons.close,
+                      size: 20.0,
+                      color: Colors.black,
+                      ),
+                      onPressed: () async {
+                        String? fcmToken = await widget.fcm.getToken();
+                        http.Response response = await http.post(
+                        Uri.parse('https://us-central1-iotrain-49a8d.cloudfunctions.net/api/add_user'),
+                        body: {
+                        'device_id': widget.device,
+                        'user': widget.user.displayName! + "_" + widget.user.uid,
+                        'fcm_token': fcmToken
+                        },
+                      );
+                      var jsonResponse = jsonDecode(response.body);
+                      print(jsonResponse);
+                    },
+                      ),]
+                    ): null,),
                     height: 70,
                     color: (document.get('user').split("_")[1] == widget.user.uid) ? Colors.orange : Colors.grey,
                     margin: EdgeInsets.all(10.0),
