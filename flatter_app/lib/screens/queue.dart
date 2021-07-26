@@ -79,13 +79,11 @@ class _QueueScreenState extends State<QueueScreen>{
                       color: Colors.black,
                       ),
                       onPressed: () async {
-                        String? fcmToken = await widget.fcm.getToken();
                         http.Response response = await http.post(
-                        Uri.parse('https://us-central1-iotrain-49a8d.cloudfunctions.net/api/add_user'),
+                        Uri.parse('https://us-central1-iotrain-49a8d.cloudfunctions.net/api/remove_user'),
                         body: {
                         'device_id': widget.device,
-                        'user': widget.user.displayName! + "_" + widget.user.uid,
-                        'fcm_token': fcmToken
+                        'user': widget.user.displayName! + "_" + widget.user.uid
                         },
                       );
                       var jsonResponse = jsonDecode(response.body);
