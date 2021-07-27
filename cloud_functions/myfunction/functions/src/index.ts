@@ -13,6 +13,23 @@ app.get("/", ( req, res ) => {
 })
 
 
+app.post('/remove_user', async (req, res) =>{
+    const device_id = req.body.device_id
+    const user = req.body.user
+    try{
+        let p1 = admin.firestore().collection(`queue${device_id}`).doc(user).delete();
+        let p2 = admin.firestore().collection('users').doc(user).update({
+            "queues": admin.firestore.FieldValue.arrayRemove(device_id)
+        })
+        await Promise.all([p1,p2])
+        res.sendStatus(200)
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).send(error)
+    }
+})
+
 app.get('/pop_user/:device_id/:difficulty', async (req, res) =>{
     const device_id = req.params.device_id
     const difficulty = req.params.difficulty
@@ -36,6 +53,7 @@ app.get('/pop_user/:device_id/:difficulty', async (req, res) =>{
             promise_array.push(p1,p2,p3)
             await Promise.all(promise_array)
         }
+
         if(querrysnapshot.docs.length >= 2){
             let next_user = querrysnapshot.docs[1].data()
             
@@ -55,6 +73,25 @@ app.get('/pop_user/:device_id/:difficulty', async (req, res) =>{
         else {
             res.send({user: 'empty'})
         }
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).send(error)
+    }
+})
+
+app.get('/get_next/:device_id',async (req, res) =>{
+    const device_id = req.params.device_id
+    try{
+        const querrysnapshot = await admin.firestore().collection(`queue${device_id}`).orderBy("timestamp", "asc").limit(1).get()
+        if (querrysnapshot.docs.length >= 1){
+            let next_user = querrysnapshot.docs[0].data()
+            res.send({user: next_user!.user})
+        }
+        else {
+            res.send({user: 'empty'})
+        }
+
     }
     catch(error){
         console.log(error)
