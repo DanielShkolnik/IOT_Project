@@ -23,8 +23,9 @@ import drivers
 # SETUP
 ############################################################################################################################################
 
-url_empty_machine = "https://us-central1-iotrain-49a8d.cloudfunctions.net/api/pop_user/1/"
+url_pop_and_get_next = "https://us-central1-iotrain-49a8d.cloudfunctions.net/api/pop_user/1/"
 url_add_queue = "https://us-central1-iotrain-49a8d.cloudfunctions.net/api/add_user"
+url_get_next = "https://us-central1-iotrain-49a8d.cloudfunctions.net/api/get_next/1"
 firebaseConfig = {
     'apiKey': "AIzaSyDoTudKsvt-FjL1QJhOVxp4FeT_npH7Ds0",
     'authDomain': "iotrain-49a8d.firebaseapp.com",
@@ -46,8 +47,12 @@ GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 # Firebase config
-firebase = pyrebase.initialize_app(firebaseConfig)
-storage = firebase.storage()
+try:
+  firebase = pyrebase.initialize_app(firebaseConfig)
+  storage = firebase.storage()
+except:
+  print("SETUP: Network failure in Firebase config - Exiting...")
+  exit()
 path_on_firebase = "users"
 path_on_raspberrypi = "/home/pi/Desktop/Integration/users/"
 
@@ -65,7 +70,7 @@ known_face_uids = []
 display = drivers.Lcd()
 
 # Threshold representes occupied machine for ultrasonic distance sensor
-OCCUPIED_THRESHOLD = 10
+OCCUPIED_THRESHOLD = 40
 
 ############################################################################################################################################
 # FUNCTIONS
@@ -101,6 +106,7 @@ def distance():
 
 # print on LCD display function
 def lcd_print(line1, line2):
+  display.lcd_clear()
   print("Writing to display")
   display.lcd_display_string(line1, 1)  
   display.lcd_display_string(line2, 2)  
@@ -110,32 +116,45 @@ def lcd_print(line1, line2):
 # Delete old local users, download from DB updated users and load faces encoding for face-detection
 def sync_images_db():
   #Delete old users
-  # filelist = [ f for f in os.listdir("users") if f.endswith(".jpg") ]
-  # for f in filelist:
-  #   os.remove(os.path.join("users",f))
+  filelist = [ f for f in os.listdir("users") if f.endswith(".jpg") ]
+  for f in filelist:
+    os.remove(os.path.join("users",f))
 
-  #Update users folder
-  # all_files = storage.bucket.list_blobs(prefix="users/")
-  # for file in all_files:
-  #   print(file.name)
-  #   try:
-  #     file.download_to_filename(file.name)
-  #   except:
-  #     print('Download Failed')
-  # print("Update users from firebase")
+  # Update users folder
+  try:
+    all_files = storage.bucket.list_blobs(prefix="users/")
+    for file in all_files:
+      print(file.name)
+      try:
+        file.download_to_filename(file.name)
+      except:
+        print('Download Failed')
+    print("Update users from firebase")
+  except:
+    print("sync_images_db: Network error")
+    return -1
 
   #Load faces encodings
   filelist = [ f for f in os.listdir("users") if f.endswith(".jpg") ]
   face_images = []
   global images_face_encoding
   global known_face_names
-  global known_face_uids
+  global known_face_uids  
   for f in filelist:
-    face_images.append(face_recognition.load_image_file("users/" + f))
-    images_face_encoding.append(face_recognition.face_encodings(face_images[-1])[0])
-    known_face_names.append(f.split("_")[0])
-    known_face_uids.append(f.split("_")[1].split(".")[0])
+    image = face_recognition.load_image_file("users/" + f)
+    face_location = face_recognition.face_locations(image)
+    print("Found {} faces in image of {}".format(len(face_location),f))
+    if len(face_location) > 1:
+      print("There are more than 1 face in the pic, please change picture")
+    elif len(face_location) == 0:
+      print("Not Recognized any face, please change picture")
+    else:
+      face_images.append(face_recognition.load_image_file("users/" + f))
+      images_face_encoding.append(face_recognition.face_encodings(face_images[-1])[0])
+      known_face_names.append(f.split("_")[0])
+      known_face_uids.append(f.split("_")[1].split(".")[0])
   print("finished loading faces")
+  return 0
 
 # Capture image, compares faces to DB and return the face index or -1 if error accured
 def capture_and_detect_face_image():
@@ -182,8 +201,12 @@ def add_to_queue():
     return ""
   else:
     pload = {"device_id":1, "user":known_face_names[user_index] + "_" + known_face_uids[user_index], "fcm_token":"from machine"}
-    r = requests.post(url_add_queue, data = pload)
-    r = json.loads(r.text)
+    try:
+      r = requests.post(url_add_queue, data = pload)
+      r = json.loads(r.text)
+    except:
+      print("add_to_queue: Network Error")
+      return ""
     if r["result"] == "already in queue":
       print("Already in queue")
       lcd_print("Greetings {}!".format(known_face_names[user_index]),"Already in queue")
@@ -193,8 +216,12 @@ def add_to_queue():
 
 # Pop the user that just finished at the machine and get next user in queue
 def pop_user_from_queue_and_get_next(selected_dificulty):
-  r = requests.get(url_empty_machine + selected_dificulty)
-  r = json.loads(r.text)
+  try:
+    r = requests.get(url_pop_and_get_next + selected_dificulty)
+    r = json.loads(r.text)
+  except:
+    print("pop_user_from_queue_and_get_next: Network Error")
+    return "error"
   if r != {} and r["user"] != "empty":
     print(r["user"])
     lcd_print("The next up is","{}".format(r["user"].split("_")[0]))
@@ -204,7 +231,25 @@ def pop_user_from_queue_and_get_next(selected_dificulty):
     print("Writing to display")
     lcd_print("The queue is","Empty")
     return ""
-                                                                                   
+
+# Get the next user in queue
+def get_next_user_from_queue():
+  try:
+    r = requests.get(url_get_next)
+    r = json.loads(r.text)
+  except:
+    print("get_next_user_from_queue: Network Error")
+    return "error"
+  if r != {} and r["user"] != "empty":
+    print(r["user"])
+    lcd_print("The next up is","{}".format(r["user"].split("_")[0]))
+    return r["user"]
+  else:
+    print("Empty")
+    print("Writing to display")
+    lcd_print("The queue is","Empty")
+    return ""
+
 # print on LCD display the dificulty menu and retun the selected dificulty
 def select_dificulty():
   display.lcd_clear()
@@ -238,20 +283,48 @@ def check_unauthorized_entrence():
     if distance() < OCCUPIED_THRESHOLD:
       counter = counter + 1
   return counter > 10
-      
 
+# print on LCD display the menu options and retun the selected option
+def select_menu():
+  display.lcd_clear()
+  selected_line = 0
+  selection_changed = False
+  display.lcd_display_string("--> Recognize", 1)  
+  display.lcd_display_string("    Register", 2)
+  while GPIO.input(25) != GPIO.HIGH:
+    if selection_changed:
+      selection_changed = False
+      sleep(1)
+      display.lcd_clear()
+      if selected_line == 0:
+        display.lcd_display_string("--> Recognize", 1)  
+        display.lcd_display_string("    Register", 2)
+      else:
+        display.lcd_display_string("    Recognize", 1)  
+        display.lcd_display_string("--> Register", 2)
+
+    if GPIO.input(15) == GPIO.HIGH:
+      selection_changed = True
+      selected_line = (selected_line + 1)%2
+  display.lcd_clear()
+  return "recognize" if (selected_line == 0) else "register"
+      
 ############################################################################################################################################
 # State Machine
 ############################################################################################################################################
 #states = ["Machine Vacant", "Machine Enternce", "Queue Registration", "Difficulty Selection", "Machine Occupied", "Error"]
 print("Starting sync_images_db()...")
-sync_images_db()
+return_value = -1
+while return_value != 0:
+  return_value = sync_images_db()
+
 current_state = "Machine Vacant"
 
-#debug()
-
 # Init next in queue from DB
-next_in_queue = ""
+return_value = "error"
+while return_value == "error":
+  return_value = get_next_user_from_queue()
+next_in_queue = return_value
 
 # Selected dificulty to be used in 
 selected_dificulty = ""
@@ -263,15 +336,24 @@ while True:
   print("Finished checking unauthorized entrence")
 
   if current_state == "Machine Vacant":
-    counter = 0
-    while counter < 10:
-      if GPIO.input(15) == GPIO.HIGH:
-        print("Machine Enternce Button Pushed")
-        current_state = "Machine Enternce"
-        break
-      counter = counter + 1
+    selected_option = select_menu()
+    if selected_option == "recognize":
+      current_state = "Machine Enternce"
+    else:
+      current_state = "Queue Registration"
+    # counter = 0
+    # while counter < 10:
+    #   if GPIO.input(15) == GPIO.HIGH:
+    #     print("Machine Enternce Button Pushed")
+    #     current_state = "Machine Enternce"
+    #     break
+    #   counter = counter + 1
 
   elif current_state == "Machine Enternce":
+    return_value = "error"
+    while return_value == "error":
+      return_value = get_next_user_from_queue()
+    next_in_queue = return_value
     if next_in_queue == "":
       next_in_queue = add_to_queue()
       if next_in_queue == "":
@@ -290,18 +372,32 @@ while True:
         current_state = "Machine Vacant"
 
   elif current_state == "Queue Registration":
-    print("asd")
+    added_user = add_to_queue()
+    print("Queue Registration: Added user = " + added_user)
+    current_state = "Machine Vacant"
 
   elif current_state == "Difficulty Selection":
     selected_dificulty = select_dificulty()
+    lcd_print("Please enter", "the machine")
     while distance() > OCCUPIED_THRESHOLD:
       sleep(1)
       print("Difficulty Selection: Waiting for user to occupy machine")
     current_state = "Machine Occupied"
 
+
   elif current_state == "Machine Occupied":
+    display.lcd_clear()
+    display.lcd_display_string("--> Register", 1)
     counter = 0
-    while counter < 5:
+    while counter < 3:
+      if GPIO.input(25) == GPIO.HIGH:
+        display.lcd_clear()
+        display.lcd_display_string("Recognizing face,", 1)
+        display.lcd_display_string("Stay still...", 2)
+        added_user = add_to_queue()
+        print("Machine Occupied: Added user to queue = " + added_user)
+        display.lcd_clear()
+        display.lcd_display_string("--> Register", 1)
       print("Machine Occupied: Waiting for user to vacate machine")
       if distance() > OCCUPIED_THRESHOLD:
         counter = counter + 1
@@ -309,12 +405,28 @@ while True:
         counter = 0
       sleep(1)
     print("Machine Occupied: User vacated the machine")
-    next_in_queue = pop_user_from_queue_and_get_next(selected_dificulty)
+    return_value = "error"
+    while return_value == "error":
+      return_value = pop_user_from_queue_and_get_next(selected_dificulty)
+    next_in_queue = return_value
     current_state = "Machine Vacant"
 
   # current_state == "Error"
   else:
     print("Error accured - exiting program")
-    exit()
+    display.lcd_display_string("Its not your", 1)  
+    display.lcd_display_string("turn, leave!", 2)
+    counter = 0
+    while counter < 5:
+      print("Unauthorized user: Waiting for user to vacate machine")
+      if distance() > OCCUPIED_THRESHOLD:
+        counter = counter + 1
+      else:
+        counter = 0
+      sleep(1)
+    display.lcd_clear()
+    print("Unauthorized user: User vacated the machine")
+    current_state = "Machine Vacant"
+    
 
 
